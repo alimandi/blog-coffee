@@ -1,23 +1,27 @@
 import { Injectable } from '@nestjs/common';
 import { v4 as uuid } from 'uuid';
+import { Model } from 'mongoose';
 import { PostModel } from './post.model';
 import { AddPostInput, AddPostOutput } from './dto/add-post.dto';
 import { GetPostsOutput } from './dto/get-posts.dto';
 import { EditPostInput, EditPostOutput } from './dto/edit-post.dto';
 import { RemovePostOutput } from './dto/remove-post.dto';
 import { GetPostOutput } from './dto/get-post.dto';
+import { Post, PostDocument, PostSchema } from './schema/post.schema';
+import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
 export class PostService {
+  constructor(
+    @InjectModel(Post.name) private readonly postModel: Model<PostDocument>,
+  ) {}
+
   private posts: PostModel[] = [];
 
-  addPost(input: AddPostInput): AddPostOutput {
-    const post: PostModel = {
-      id: uuid(),
-      title: input.title,
-      description: input.description,
-    };
-    this.posts.push(post);
+  async addPost(input: AddPostInput): Promise<AddPostOutput> {
+    const post = await this.postModel.create({
+      ...input,
+    });
 
     return {
       message: 'post added successfully',

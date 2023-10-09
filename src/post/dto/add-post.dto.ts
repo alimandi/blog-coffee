@@ -1,4 +1,4 @@
-import { PostModel } from '../post.model';
+import { Post } from '../schema/post.schema';
 
 export class AddPostInput {
   title: string;
@@ -7,5 +7,5 @@ export class AddPostInput {
 
 export class AddPostOutput {
   message: string;
-  post?: PostModel;
+  post?: Post;
 }

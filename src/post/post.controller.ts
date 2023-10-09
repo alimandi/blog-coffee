@@ -18,7 +18,7 @@ export class PostController {
   constructor(private postservice: PostService) {}
 
   @Post()
-  addPost(@Body() input: AddPostInput): AddPostOutput {
+  addPost(@Body() input: AddPostInput): Promise<AddPostOutput> {
     return this.postservice.addPost(input);
   }
 
