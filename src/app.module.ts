@@ -5,6 +5,8 @@ import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { SmsModule } from './sms/sms.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { RedisModule } from './redis/redis.module';
+import { JwtModule } from './jwt/jwt.module';
 import * as Joi from 'joi';
 
 @Module({
@@ -27,6 +29,8 @@ import * as Joi from 'joi';
     UserModule,
     AuthModule,
     SmsModule,
+    RedisModule,
+    JwtModule,
   ],
 })
 export class AppModule {}
