@@ -1,4 +1,11 @@
-import { Module } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
+import { UserMiddleware } from './user/user.middleware';
+import { JwtModule } from './jwt/jwt.module';
 import { PostModule } from './post/post.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserModule } from './user/user.module';
@@ -6,8 +13,8 @@ import { AuthModule } from './auth/auth.module';
 import { SmsModule } from './sms/sms.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { RedisModule } from './redis/redis.module';
-import { JwtModule } from './jwt/jwt.module';
 import * as Joi from 'joi';
+import { userModelFactory } from './user/schema/user.schema';
 
 @Module({
   imports: [
@@ -25,6 +32,7 @@ import * as Joi from 'joi';
       }),
       inject: [ConfigService],
     }),
+    MongooseModule.forFeatureAsync([userModelFactory]),
     PostModule,
     UserModule,
     AuthModule,
@@ -33,4 +41,11 @@ import * as Joi from 'joi';
     JwtModule,
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(UserMiddleware).forRoutes({
+      path: '*',
+      method: RequestMethod.ALL,
+    });
+  }
+}
