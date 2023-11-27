@@ -6,42 +6,54 @@ import {
   Param,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
 import { PostService } from './post.service';
 import { AddPostInput, AddPostOutput } from './dto/add-post.dto';
 import { EditPostInput, EditPostOutput } from './dto/edit-post.dto';
 import { GetPostOutput } from './dto/get-post.dto';
-import { GetPostsOutput } from './dto/get-posts.dto';
+import { GetPostsInput, GetPostsOutput } from './dto/get-posts.dto';
+import { RemovePostOutput } from './dto/remove-post.dto';
+import { Types } from 'mongoose';
+import { currentUser } from 'src/common/current-user.decorator';
+import { User } from 'src/user/schema/user.schema';
 
 @Controller('posts')
 export class PostController {
   constructor(private postservice: PostService) {}
 
   @Post()
-  addPost(@Body() input: AddPostInput): Promise<AddPostOutput> {
-    return this.postservice.addPost(input);
+  addPost(
+    @currentUser() user: User,
+    @Body() input: AddPostInput,
+  ): Promise<AddPostOutput> {
+    return this.postservice.addPost(user, input);
   }
 
   @Put(':id')
   editPost(
-    @Param('id') id: string,
+    @currentUser() user: User,
+    @Param('id') _id: Types.ObjectId,
     @Body() input: EditPostInput,
-  ): EditPostOutput {
-    return this.postservice.editPost(id, input);
+  ): Promise<EditPostOutput> {
+    return this.postservice.editPost(user, _id, input);
   }
 
   @Delete(':id')
-  removePost(@Param('id') id: string): EditPostOutput {
-    return this.postservice.removePost(id);
+  removePost(
+    @currentUser() user: User,
+    @Param('id') _id: Types.ObjectId,
+  ): Promise<RemovePostOutput> {
+    return this.postservice.removePost(user, _id);
   }
 
   @Get(':id')
-  getPost(@Param('id') id: string): GetPostOutput {
-    return this.postservice.getPost(id);
+  getPost(@Param('id') _id: Types.ObjectId): Promise<GetPostOutput> {
+    return this.postservice.getPost(_id);
   }
 
   @Get()
-  getPosts(): GetPostsOutput {
-    return this.postservice.getPosts();
+  getPosts(@Query() input: GetPostsInput): Promise<GetPostsOutput> {
+    return this.postservice.getfilterPosts(input);
   }
 }

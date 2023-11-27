@@ -1,6 +1,6 @@
-import { PostModel } from '../post.model';
+import { Post } from '../schema/post.schema';
 
 export class GetPostOutput {
   message: string;
-  post?: PostModel;
+  post?: Post;
 }

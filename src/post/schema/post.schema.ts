@@ -19,6 +19,12 @@ export class Post {
   @Prop({ trim: true })
   description: string;
 
+  @Prop({ default: false })
+  disable: boolean;
+
+  @Prop()
+  createBy: Types.ObjectId;
+
   @Prop()
   createdAt: Date;
 

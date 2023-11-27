@@ -1,14 +1,13 @@
-import { Injectable } from '@nestjs/common';
-import { v4 as uuid } from 'uuid';
-import { Model } from 'mongoose';
-import { PostModel } from './post.model';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { Model, Types } from 'mongoose';
 import { AddPostInput, AddPostOutput } from './dto/add-post.dto';
-import { GetPostsOutput } from './dto/get-posts.dto';
+import { GetPostsInput, GetPostsOutput } from './dto/get-posts.dto';
 import { EditPostInput, EditPostOutput } from './dto/edit-post.dto';
 import { RemovePostOutput } from './dto/remove-post.dto';
 import { GetPostOutput } from './dto/get-post.dto';
-import { Post, PostDocument, PostSchema } from './schema/post.schema';
+import { Post, PostDocument } from './schema/post.schema';
 import { InjectModel } from '@nestjs/mongoose';
+import { User } from 'src/user/schema/user.schema';
 
 @Injectable()
 export class PostService {
@@ -16,34 +15,30 @@ export class PostService {
     @InjectModel(Post.name) private readonly postModel: Model<PostDocument>,
   ) {}
 
-  private posts: PostModel[] = [];
-
-  async addPost(input: AddPostInput): Promise<AddPostOutput> {
+  async addPost(user: User, input: AddPostInput): Promise<AddPostOutput> {
     const post = await this.postModel.create({
+      createBy: user._id,
       ...input,
     });
 
     return {
-      message: 'post added successfully',
+      message: `post added successfully`,
       post,
     };
   }
 
-  editPost(id: string, input: EditPostInput): EditPostOutput {
-    let post: PostModel;
+  async editPost(
+    user: User,
+    _id: Types.ObjectId,
+    input: EditPostInput,
+  ): Promise<EditPostOutput> {
+    const post = await this.postModel.findOneAndUpdate(
+      { _id, createBy: user._id },
+      { ...input },
+      { new: true },
+    );
 
-    this.posts = this.posts.map((p) => {
-      if (p.id === id) {
-        post = {
-          id: p.id,
-          title: input.title,
-          description: input.description,
-        };
-
-        return post;
-      }
-      return p;
-    });
+    if (!post) throw new NotFoundException();
 
     return {
       message: 'post edited successfully',
@@ -51,16 +46,13 @@ export class PostService {
     };
   }
 
-  removePost(id: string): RemovePostOutput {
-    let post: PostModel;
-
-    this.posts = this.posts.filter((p) => {
-      if (p.id === id) {
-        post = p;
-      }
-
-      return p.id !== id;
+  async removePost(user: User, _id: Types.ObjectId): Promise<RemovePostOutput> {
+    const post = await this.postModel.findOneAndRemove({
+      _id,
+      createBy: user._id,
     });
+
+    if (!post) throw new NotFoundException();
 
     return {
       message: 'post removed successfully',
@@ -68,18 +60,40 @@ export class PostService {
     };
   }
 
-  getPost(id: string): GetPostOutput {
-    const post: PostModel = this.posts.find((getPost) => getPost.id == id);
+  async getPost(_id: Types.ObjectId): Promise<GetPostOutput> {
+    const post = await this.postModel.findById({ _id });
+
+    if (!post) throw new NotFoundException();
+
     return {
       message: 'posts was found successfully',
       post,
     };
   }
 
-  getPosts(): GetPostsOutput {
+  async getfilterPosts(input: GetPostsInput): Promise<GetPostsOutput> {
+    const filters = {};
+
+    if (input.q) {
+      filters['$or'] = [
+        { title: new RegExp(`.*${input.q}.*`, 'gi') },
+        { description: new RegExp(`.*${input.q}.*`, 'gi') },
+      ];
+    }
+
+    if (input.disable) {
+      filters['disable'] = input.disable;
+    }
+
+    const posts = await this.postModel
+      .find(filters)
+      .limit(input.limit)
+      .skip(input.page)
+      .sort({ title: -1 });
+
     return {
       message: 'posts was found successfully',
-      post: this.posts,
+      posts,
     };
   }
 }
