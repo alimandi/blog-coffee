@@ -17,7 +17,7 @@ export class PostService {
 
   async addPost(user: User, input: AddPostInput): Promise<AddPostOutput> {
     const post = await this.postModel.create({
-      createBy: user._id,
+      createdBy: user._id,
       ...input,
     });
 
@@ -33,7 +33,7 @@ export class PostService {
     input: EditPostInput,
   ): Promise<EditPostOutput> {
     const post = await this.postModel.findOneAndUpdate(
-      { _id, createBy: user._id },
+      { _id, createdBy: user._id },
       { ...input },
       { new: true },
     );
@@ -49,7 +49,7 @@ export class PostService {
   async removePost(user: User, _id: Types.ObjectId): Promise<RemovePostOutput> {
     const post = await this.postModel.findOneAndRemove({
       _id,
-      createBy: user._id,
+      createdBy: user._id,
     });
 
     if (!post) throw new NotFoundException();
@@ -61,7 +61,7 @@ export class PostService {
   }
 
   async getPost(_id: Types.ObjectId): Promise<GetPostOutput> {
-    const post = await this.postModel.findById({ _id });
+    const post = await this.postModel.findById({ _id }).populate(['createdBy']);
 
     if (!post) throw new NotFoundException();
 
@@ -89,7 +89,8 @@ export class PostService {
       .find(filters)
       .limit(input.limit)
       .skip(input.page)
-      .sort({ title: -1 });
+      .sort({ title: -1 })
+      .populate(['createdBy']);
 
     return {
       message: 'posts was found successfully',

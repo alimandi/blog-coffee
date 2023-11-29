@@ -5,6 +5,7 @@ import {
   Prop,
   SchemaFactory,
 } from '@nestjs/mongoose';
+import { User } from 'src/user/schema/user.schema';
 
 @Schema({
   collection: 'posts',
@@ -22,8 +23,8 @@ export class Post {
   @Prop({ default: false })
   disable: boolean;
 
-  @Prop()
-  createBy: Types.ObjectId;
+  @Prop({ type: Types.ObjectId, ref: User.name })
+  createdBy: Types.ObjectId;
 
   @Prop()
   createdAt: Date;

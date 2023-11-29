@@ -13,7 +13,7 @@ import {
 export class User {
   _id: Types.ObjectId;
 
-  @Prop({ required: true, trim: true })
+  @Prop({ required: true, trim: true, default: 'Guest' })
   fullname: string;
 
   @Prop({ trim: true, required: true, unique: true })
