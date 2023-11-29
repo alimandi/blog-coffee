@@ -7,6 +7,7 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { PostService } from './post.service';
 import { AddPostInput, AddPostOutput } from './dto/add-post.dto';
@@ -17,11 +18,13 @@ import { RemovePostOutput } from './dto/remove-post.dto';
 import { Types } from 'mongoose';
 import { currentUser } from 'src/common/current-user.decorator';
 import { User } from 'src/user/schema/user.schema';
+import { AuthGuard } from 'src/auth/auth.guard';
 
 @Controller('posts')
 export class PostController {
   constructor(private postservice: PostService) {}
 
+  @UseGuards(AuthGuard)
   @Post()
   addPost(
     @currentUser() user: User,
@@ -30,6 +33,7 @@ export class PostController {
     return this.postservice.addPost(user, input);
   }
 
+  @UseGuards(AuthGuard)
   @Put(':id')
   editPost(
     @currentUser() user: User,
@@ -39,6 +43,7 @@ export class PostController {
     return this.postservice.editPost(user, _id, input);
   }
 
+  @UseGuards(AuthGuard)
   @Delete(':id')
   removePost(
     @currentUser() user: User,

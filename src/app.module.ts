@@ -8,13 +8,13 @@ import { UserMiddleware } from './user/user.middleware';
 import { JwtModule } from './jwt/jwt.module';
 import { PostModule } from './post/post.module';
 import { MongooseModule } from '@nestjs/mongoose';
-import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { SmsModule } from './sms/sms.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { RedisModule } from './redis/redis.module';
 import * as Joi from 'joi';
 import { userModelFactory } from './user/schema/user.schema';
+import { AccountModule } from './account/account.module';
 
 @Module({
   imports: [
@@ -34,11 +34,11 @@ import { userModelFactory } from './user/schema/user.schema';
     }),
     MongooseModule.forFeatureAsync([userModelFactory]),
     PostModule,
-    UserModule,
     AuthModule,
     SmsModule,
     RedisModule,
     JwtModule,
+    AccountModule,
   ],
 })
 export class AppModule implements NestModule {
